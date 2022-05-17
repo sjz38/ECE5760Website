@@ -48,11 +48,76 @@
 </head>
 <body>
   <div class="container-fluid p-3 bg-dark text-white text-center"></div>    
-  <div class="container-fluid p-5 bg-dark text-white text-center">
+  <div class="container-fluid pt-5 pb-2 bg-dark text-white text-center">
     <h1>An Unsuccessful Attempt... PDP11</h1>
   </div>
   
   <div class="container mt-5">
-    <p>PDP11 stuff here</p>
+    <p>The original intent for our final project was to recreate the PDP11 on the DE1-SoC. The 
+      <a href="https://en.wikipedia.org/wiki/PDP-11">PDP11</a> was a series of 
+       microcomputers developed in the '70s and '80s by the Digital Electronics Corporation (DEC). We were interested 
+       in retro computing and thought that this would be a good opportunity to exercise our knowledge of computer 
+       architecture. As mentioned in our proposal, we knew that this project would entail a lot of research to find 
+       the proper documentation. After finding the relevant documentation, we anticipated that the implementation of 
+       the architecture would be relatively straightforward. This proved to be an incorrect assumption.</p>
+
+    <p>After doing some preliminary research, we decided to implement the PDP11/70, since we were able to find 
+      sufficient documentation. Specifically, the resources that helped us the most were the 
+      <a href="http://www.bitsavers.org/pdf/dec/pdp11/1170/EK-KB11C-TM-001_1170procMan.pdf">KB11-C Processor Manual</a>, 
+      and its <a href="http://www.bitsavers.org/pdf/dec/pdp11/1170/MP0KB11-C0_1170engDrw_Nov75.pdf">corresponding engineering drawings</a>. 
+      The KB11-C was the processor that the PDP11/70 used. With this project being computer architecture related, 
+      we knew that there would be a lot of simulation and verification. In terms of verification, we decided to use 
+      <a href="https://docs.cocotb.org/en/stable/">CocoTB</a>, a Python-based verification framework, since David had previous exposure to it. We decided to organize 
+      our work by creating individual modules that represent different parts of the design (i.e. ALU, Shifter, …), and 
+      functionally verifying these modules in CocoTB after they were designed. The two-phased approach meant that one 
+      person could work on implementing the SystemVerilog while the other person could focus on writing testbenches in 
+      CocoTB. </p>
+    
+    <p>To familiarize ourselves with the workflow, we decided to start off by implementing the ALU. From the 
+       documentation, the PDP11/70 has a 16-bit ALU which is made up of 4 4-bit 74S181 ALU chips. In engineering 
+      drawings DAPF and DAPH we can see the connections between the four ALUs. In DAPF we can see the logical and 
+      arithmetic functions that are implemented by each ALU. Look-ahead carries are performed with a 74182 chip which 
+      produces carry out bits for each of the 4-bit ALUs given propagate and generate inputs.</p>
+
+    <center><img src="media/DAPF.png" class="img-fluid">
+    <p><b>Figure 1: DAPF schematic showing the two lower byte 74S181 ALU chips and the functions they implement (bottom right corner)</b></p></center>
+
+    <center><img src="media/ALU_functions.png" class="img-fluid">
+    <p><b>Figure 2: Closer look at the functions implemented by the 74S181, as shown on DAPF</b></p></center>
+    
+    <center><img src="media/DAPH.png" class="img-fluid">
+    <p><b>Figure 3: DAPH schematic showing the two upper byte 74S181 chips</b></p></center>
+
+    <p>Given the functional description of the 74S181s, the logic was able to be generated with a case statement based 
+       on the select signals. The logic for the 74182 CLA replicated the gate-level implementation from the 
+       <a href="https://media.digikey.com/pdf/Data%20Sheets/Fairchild%20PDFs/74F182.pdf">datasheet</a> 
+       because that was the simplest way to correctly implement the logic. It was at this point that we realized we did 
+       not know how to implement the propagate and generate bits for the 74S181 functionally. The only place we knew 
+       the logic was from the gate-level implementation of the entire 74S181. At this point we needed to revise the 
+       74S181 implementation so that it replicated the gate-level implementation. This made the SystemVerilog harder 
+       to understand, but guaranteed functionality. </p>
+
+    <center><img src="media/cla.png" class="img-fluid">
+    <p><b>Figure 4: Gate level implementation of 74S182 chip</b></p></center>
+
+    <p>The realization that many components of the PDP11 could be like this, requiring painstaking gate-level 
+       implementations rather than register-transfer level (RTL), also made us question whether we had enough time to 
+       implement the whole CPU, and whether or not it would really teach us anything.</p>
+
+    <p>With our straightforward ALU design implemented, we moved onto setting up the verification framework, CocoTB. 
+       Initially, we tried to set up CocoTB using the Windows Subsystem for Linux, but were not able to get a working 
+       Modelsim simulator up and running with it. We were able to get it running with Modelsim using Miniconda on 
+       Windows, as advised on the CocoTB installation page, and also were able to get it running on the ECE Linux s
+       ervers by leveraging the available installation of Anaconda3 and various verilog simulators. After finding 
+       two good options for running it, we began testing the ALU design, and kept getting incorrect errors, where 
+       one or two bits would be produced incorrectly by the CocoTB model we had written to implement the same 
+       functionality as the ALU. By looking at the inputs and outputs, it appeared that the ALU was producing correct 
+       results, and after hours of debugging the BinaryValue Class of CocoTB, we decided that it may not be worth 
+       using for verification.</p>
+
+    <p>To get CocoTB running on ECE Linux, simply load the anaconda3 module (using the command: module load anaconda3) 
+       and the Synopsys VCS module (module load synopsys-vcs-R-2020.12) then follow the guides on CocoTB's 
+       documentation and that should create a functional verification environment. </p>
+
   </div>
 </body>
