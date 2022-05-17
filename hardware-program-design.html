@@ -27,7 +27,7 @@
             <a class="nav-link" href="high-level-design.html">High Level Design</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="program-hardware-design.html">Program/Hardware Design</a>
+            <a class="nav-link" href="hardware-program-design.html">Hardware/Program Design</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="results.html">Results</a>
@@ -48,7 +48,7 @@
 </head>
 <body>
   <div class="container-fluid p-3 bg-dark text-white text-center"></div>    
-  <div class="container-fluid p-5 bg-dark text-white text-center">
+  <div class="container-fluid pt-5 pb-2 bg-dark text-white text-center">
     <h1>Hardware/Program Design</h1>
   </div>
   
@@ -58,6 +58,53 @@
   </div>
   <div class="container mt-5">
     <h3>Program Design</h3>
-    <p> Program stuff here</p>
+    <p>The original lab 3 design for the HPS C code provided simple user functionality such as being able to zoom in 
+       by factors of 2 and panning with the mouse. To improve upon the user experience, we decided to implement 
+       fractional zooming such that on each zoom action the screen would zoom in by 1%. The key part that controls the 
+       zoom amount is how the increment value gets scaled in the conversion from pixel coordinates to complex 
+       coordinates. In lab 3, the zoom amount was implemented as a right shift because that saves the use of a DSP for 
+       each of the x (real) and y (imaginary) axes. However, this constrains us to a zoom factor of 2. If the same 
+       methodology were to be used to implement a zoom of 1%, then additional DSPs would have to be used. To minimize 
+       the use of DSPs, the calculation of the entire zoom factor is offloaded to the HPS. That is, 
+       0.99<sup>zoom</sup> &times; <sup>3</sup>&frasl;<sub>640</sub> is calculated for the x zoom and 
+       0.99<sup>zoom</sup> &times; <sup>2</sup>&frasl;<sub>480</sub> is calculated for the y zoom. We utilized a lookup 
+       table for the calculations of 0.99<sup>zoom</sup> &times; 3 and 0.99<sup>zoom</sup> &times; 2 for easy access to 
+       these precomputed values. Now that there were both an x and y zooms, the previously used singular input for the 
+       zoom had to be split into two zoom_x and zoom_y signals which were fed through to the solver module.</p>
+       
+    <p>While looking through the lab 3 C code, we realized how disorganized and opaque it was. We decided to rework 
+       our algorithm from the ground up, specifically in our calculations for the x and y positions. We also decided 
+       to do this since we were encountering a bug in which zoom actions did not zoom to the center of the image. By 
+       approaching our calculations in a different way, we would be able to create something that works the way we 
+       intend it to. Specifically, we removed all references to pixel coordinates and also kept track of the horizontal 
+       (x) and vertical (y) lengths that would be shown on the VGA. Now, when zooming in, the x and y PIO positions 
+       were calculated based on how much the window size changes.</p>
+       
+    <p>Another feature that we added was the ability to specify a complex coordinate and have the visualizer 
+       automatically zoom into that point. This addition required multiple changes, but was worked on incrementally. 
+       First, the functionality of zooming into a point was tested with a hard-coded center point. To do this, the 
+       notion of a “center” had to be introduced, since the x and y PIO positions represent the top left corner of the 
+       screen. The conversion from a given center coordinate to the x and y PIO representations involved subtracting 
+       half the x and y window lengths. To extend this, we created a separate thread with locking to read user input, 
+       similar to lab 1. Whenever the character 'a' is pressed, the visualizer enters animation mode and asks for a set 
+       of complex x and y coordinates, along with a maximum zoom size (Figure 4). Upon entering these values, the 
+       visualizer will zoom into the point using a sleep time proportional to the computation time, to provide a fluid 
+       animation. During both animation and user control, debug information is printed to the terminal containing the 
+       zoom level, center coordinates, PIO values and computation time (Figure 5).</p>
+       
+    <center><img src="media/animation_prompt.png">
+    <p><b>Figure 4: Example prompt provided upon pressing 'a' to trigger an animation</b></p></center>
+      
+    <center><img src="media/text_out.png">
+    <p><b>Figure 5: Debug information printed to the terminal from any action</b></p></center>
+      
+    <p>With the added multithreading, we were encountering some issues in which mouse reading would be blocking the 
+       read thread from continuing. To fix this issue, we moved the mouse reading code to a new thread and instantiated 
+       a corresponding lock to prevent the mouse from being read during the animation mode. Overall, the changes made 
+       to the C code greatly enhanced the usability of our visualizer. Short demo clips are shown in the 
+       <a href="videos.html">Videos section</a>.</p>
+      
+    
+    </p>
   </div>
 </body>

@@ -27,7 +27,7 @@
             <a class="nav-link" href="high-level-design.html">High Level Design</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="program-hardware-design.html">Program/Hardware Design</a>
+            <a class="nav-link" href="hardware-program-design.html">Hardware/Program Design</a>>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="results.html">Results</a>
@@ -48,11 +48,52 @@
 </head>
 <body>
   <div class="container-fluid p-3 bg-dark text-white text-center"></div>    
-  <div class="container-fluid p-5 bg-dark text-white text-center">
+  <div class="container-fluid pt-5 pb-2 bg-dark text-white text-center">
     <h1>High Level Design</h1>
   </div>
   
   <div class="container mt-5">
-    <p>High Level Design stuff here</p>
+    <p>After realizing implementing the PDP11 was infeasible for the time constraints of this project, we had a long 
+       conversation with Hunter and Bruce about how to approach the remaining 2.5 weeks. We were both interested in 
+       optimization and getting the most performance out of an FPGA and decided that building off of our lab 3 
+       Mandelbrot set visualizer would be the perfect starting point. This would allow us to dive deep into 
+       optimization without having to worry about  creating a baseline implementation within our reduced timeline. 
+       At the end of Lab 3, we were able to render the full Mandelbrot set, with top-left corner coordinates of 
+       (-2, -1) and bottom right corner coordinates of (1,1) in 203 milliseconds using 16 parallel solvers writing 
+       through a round-robin arbiter to shared memory. There are certainly optimizations that can lower the computation 
+       time and better utilize the FPGA resources.</p>
+
+    <p>For the sake of completeness, an explanation of the Mandelbrot set will be discussed here. The Mandelbrot set 
+      is a complex set which is infinitely rough, yet generated from a set of simple rules. These two rules are 
+      iteratively run until either some threshold condition is met or a maximum number of iterations are met. The 
+      number of iterations determines the color of that point. The specific equations used for computing the next 
+      iteration for the real and imaginary axes are:</p>
+      
+
+    <center><img src="media/equation.png">
+    <p><b>Figure 1: The calculations used to find the real and imaginary parts of a point in the Mandelbrot Set 
+       (taken from the 
+       <a href="https://vanhunteradams.com/DE1/Mandelbrot/Mandelbrot_Implementation.html">course website</a>). 
+       Here, C<sub>R</sub> and C<sub>i</sub> are the real and imaginary parts of a complex number which corresponds to 
+       our location in the set.</b></p></center>
+          
+    <p>If the sum of squares of Z<sub>i</sub><sup>N+1</sup> and Z<sub>R</sub><sup>N+1</sup> exceeds 4, then the point 
+       is considered to have diverged. If not, then more iterations are calculated. Since this algorithm operates on 
+       coordinates independently of one another, it is highly suited towards parallelization on the DE1-SoC. The main 
+       constraints that the platform provides are that there are only 87 DSP blocks capable of performing 27x27 bit 
+       multiplications for our 4.23 fixed point data type. Since there are not enough resources to entirely parallelize 
+       the 307200 pixels on the VGA monitor, solver engines can be made which calculate the number of iterations before 
+       the conditions of the Mandelbrot equation diverge, bounded by an upper limit of 1000 for a set of pixels. 
+       Each solver is given an equal proportion of the pixels displayed on the screen based on a predetermined pattern, 
+       and we assume that the workload is distributed evenly among the solvers. Each solver is assigned an ID, and 
+       solves all of the pixels in every ID<sup>th</sup> vertical column. </p>
+
+      <p>On the HPS side, usability functionally was expanded upon to enhance zooming such that each zoom action was 
+         99% of the previous frame, as opposed to 50%. An animation functionality was also added that would 
+         automatically manipulate PIO ports to simulate precise user input that zoomed into a specified point. The 
+         split between FPGA and HPS in this project is done to take advantage of the capabilities of each platform. 
+         The FPGA is ideal for high-performance computation and communicating with the VGA system, while the HPS is 
+         better suited for user input and more general processing. The combination of the two allows for an intuitive, 
+         high performance result.</p>
   </div>
 </body>
