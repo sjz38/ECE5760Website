@@ -48,13 +48,81 @@
 </head>
 <body>
   <div class="container-fluid p-3 bg-dark text-white text-center"></div>    
-  <div class="container-fluid p-5 bg-dark text-white text-center">
+  <div class="container-fluid pt-5 pb-2 bg-dark text-white text-center">
     <h1>Results</h1>
   </div>
 
-
-  
   <div class="container mt-5">
-    <p> Results stuff here</p>
+    <p>The final result was a Mandelbrot Set visualizer that was significantly more usable than our lab3 
+       implementation. Not only was computation made faster with a new VGA driver and optimized resource usage allowing 
+       for 40 parallel iterators, but zooming was made much more intuitive with fractional zooming. Our demo video 
+       shows the course instructors using our visualizer for the first time and reacting favorably towards the 
+       smoothness of the zooming. Below Table 1 compares the results of our improved solver to the results from lab 3 
+       on the entire Mandelbrot set. It can be seen that our optimized implementation beats our best lab 3 result 
+       (203 ms) by nearly 7x. Getting a 2x improvement is easy to get by adding the 100MHz PLL, but further performance 
+       improvements took careful thought.</p>
+    <center>
+    <table class="table-bordered">
+        <tr><th></th><th>Solve Time</th></tr>
+        <tr><th>HPS</th><th>962 ms</th></tr>
+        <tr><th style="color:red;">Improved with <BR>40 iterators</th><th style="color:red;">30 ms</th></tr>
+        <tr><th>16 iterators</th><th>203 ms</th></tr>
+        <tr><th>8 iterators</th><th>399 ms</th></tr>
+        <tr><th>4 iterators</th><th>796 ms</th></tr>
+        <tr><th>2 iterators</th><th>1592 ms</th></tr>
+        <tr><th>1 iterators</th><th>3185 ms</th></tr>
+    </table>
+    
+    <p><b>Table 1: Comparison of compute time between the HPS and various numbers of FPGA iterators for the entire 
+      Mandelbrot set. The optimized version developed in this lab is in red.</b></p>
+    </center>
+
+    <p>Table 2 shows a comparison of the computation time of certain regions specified in the 
+       <a href="https://vanhunteradams.com/DE1/Mandelbrot/Mandelbrot.html">lab 3 handout</a>. As expected, the 
+       improved design significantly outperforms the other implementations. The relative speedup for the entire set 
+       (x = [-2, 1], y = [-1, 1]) is greater than in the other locations because the bounding box optimization is not 
+       applicable to those regions. Nonetheless, the speedup is greater than 2x for each location in the improved 
+       design. This indicates that the optimizations we added are improving performance, in addition to the 2x PLL 
+       increase.</p>
+
+    <center>
+    <table class="table-bordered">
+        <tr><th>Iterators</th><th>x = [-2, 1],<BR>y = [-1, 1]</th><th>x = [-0.758, -0.75],<BR>y = [0.05, 0.06]</th><th>x = [-1.45, -1.3],<BR>y = [-0.07, 0.07]</th></tr>
+        <tr style="color:red;"><th>40</th><th>30 ms</th><th>95 ms</th><th>111 ms</th></tr>
+        <tr><th>16</th><th>203 ms</th><th>375 ms</th><th>382 ms</th></tr>
+        <tr><th>8</th><th>399 ms</th><th>786 ms</th><th>772 ms</th></tr>
+        <tr><th>4</th><th>796 ms</th><th>1572 ms</th><th>1496 ms</th></tr>
+        <tr><th>2</th><th>1592 ms</th><th>2870 ms</th><th>3072 ms</th></tr>
+        <tr><th>1</th><th>3185 ms</th><th>5929 ms</th><th>6106 ms</th></tr>
+
+    </table>
+    <p><b>Table 2: Comparison of compute times of different regions for varying numbers of iterators. The red row is 
+          the improved design developed for this project. </b></p>
+    </center>
+
+    <p>A big part of optimization involves optimally utilizing the resources available on the FPGA. Figure 1 shows a 
+      comparison of the resources used in the previous lab’s 16 iterator implementation and the utilization of the 
+      improved design. Looking at the first metric, logic utilization, we nearly maxed out utilization with the 
+      optimized design, going from 29% utilization to 94%. The inflation in logic utilization is mainly due to going 
+      from 16 to 40 iterators. Logic was also utilized for the the updated VGA driver which was able to read from 40 
+      separate M10K banks of memory, but this replaced the previous logic of the round robin arbiter. Next, it can be 
+      seen that memory utilization went down a bit. This decrease is mainly due to us not calculating the entire 
+      coordinate mapping for each iterator. This was leading to a lot of inefficiently used memory, which would only 
+      increase as the number of iterators grew. The VGA subsystem’s memory buffer also took up a large portion of the 
+      memory, but that was replaced by the 40 M10K banks of memory that the iterators wrote to and the VGA driver read 
+      from. Finally, while DSP utilization looks to be about the same, this is actually far from the reality. In lab 3, 
+      DSP utilization was maxed out at ~16 iterators, while we were able to push that value up to 40 iterators. The key 
+      here was optimizing our states such that at most two DSPs were being used in any one state. This allowed for 
+      multipliers to be reused between states, which allowed for each iterator to only use two DSPs. Overall the resource 
+      utilization was much better utilized, allowing us to squeeze out every bit of performance the FPGA has to offer. 
+      A clear difference can be seen visually in Figure 2 which shows the FPGA floorplan via the chip planner reports.</p>
+
+    <center><img class="img-fluid" src="media/Compilation report.png">
+    <p><b>Figure 1: Compilation reports for 16 iterator design from lab 3 (left) and newly designed 40 iterator design (right)</b></p>
+    </center>
+
+    <center><img class="img-fluid" src="media/chip_planner.png">
+      <p><b>Figure 2: Chip planner of 16 iterator design (left) and 40 iterator design (right). There is an obvious difference between utilization</b></p>
+    </center>
   </div>
 </body>
