@@ -80,13 +80,13 @@
       produces carry out bits for each of the 4-bit ALUs given propagate and generate inputs.</p>
 
     <center><img src="media/DAPF.png" class="img-fluid">
-    <p><b>Figure 1: DAPF schematic showing the two lower byte 74S181 ALU chips and the functions they implement (bottom right corner)</b></p></center>
+    <p><b>Figure 1: DAPF schematic showing the two lower byte 74S181 ALU chips boxed in red and the functions they implement (bottom right corner)</b></p></center>
 
     <center><img src="media/ALU_functions.png" class="img-fluid">
     <p><b>Figure 2: Closer look at the functions implemented by the 74S181, as shown on DAPF</b></p></center>
     
     <center><img src="media/DAPH.png" class="img-fluid">
-    <p><b>Figure 3: DAPH schematic showing the two upper byte 74S181 chips</b></p></center>
+    <p><b>Figure 3: DAPH schematic showing the two upper byte 74S181 chips, boxed in red</b></p></center>
 
     <p>Given the functional description of the 74S181s, the logic was able to be generated with a case statement based 
        on the select signals. The logic for the 74182 CLA replicated the gate-level implementation from the 
@@ -118,6 +118,5 @@
     <p>To get CocoTB running on ECE Linux, simply load the anaconda3 module (using the command: module load anaconda3) 
        and the Synopsys VCS module (module load synopsys-vcs-R-2020.12) then follow the guides on CocoTB's 
        documentation and that should create a functional verification environment. </p>
-
   </div>
 </body>

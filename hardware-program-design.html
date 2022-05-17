@@ -130,7 +130,7 @@
 
 
 
-  <div class="container mt-5 pb-5">
+  <div class="container mt-5">
     <h3>Program Design</h3>
     <p>The original lab 3 design for the HPS C code provided simple user functionality such as being able to zoom in 
        by factors of 2 and panning with the mouse. To improve upon the user experience, we decided to implement 
@@ -179,6 +179,14 @@
        <a href="videos.html">Videos section</a>.</p>
       
     
-    </p>
+  <div class="container mt-5 pb-5">
+    <h3>Qsys</h3>
+    <p>Below is an image of the Qsys layer used. One key difference is the removal of the onchip_vga_buffer which was 
+       used in our previous round robin arbiter implementation. Instead 40 M10K blocks are used to store the outputs 
+       of each iterator. Additionally, we have the 100MHz computation PLL in use, along with the 25MHz VGA PLL. The 
+       separated pio_zx and pio_zy are seen at the bottom, which are used for the x and y zoom values passed from the C code. </p>
+
+    <center><img src="media/qsys.png" class="img-fluid">
+    <p><b>Figure 6: Qsys layout</b></p></center>
   </div>
 </body>
